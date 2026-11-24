@@ -35,7 +35,7 @@ export interface RemoteConfigValues {
   defaultDifficulty: Difficulty;
 }
 
-export const DEFAULT_CLOUD_MODEL_ID = 'gemini-2.5-flash';
+export const DEFAULT_CLOUD_MODEL_ID = 'gemini-3.8-flash';
 export const DEFAULT_DIFFICULTY: Difficulty = 'medium';
 
 /** The on-device model availability, as reported by Chrome's Prompt API. */

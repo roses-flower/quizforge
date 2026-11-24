@@ -13,12 +13,12 @@
  */
 
 export const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY',
-  authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_PROJECT_ID.firebasestorage.app',
-  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-  appId: 'YOUR_APP_ID',
+  apiKey: 'AIzaSyA0vXrMSlNtYRDe4EQa8ASxxGHvdJL30ac',
+  authDomain: 'quizforge-b3bb3.firebaseapp.com',
+  projectId: 'quizforge-b3bb3',
+  storageBucket: 'quizforge-b3bb3.firebasestorage.app',
+  messagingSenderId: '794785806290',
+  appId: '1:794785806290:web:f3d1fbb476ef3f4a437a0b',
 };
 
 /**
@@ -38,7 +38,7 @@ export const recaptchaSiteKey = 'YOUR_RECAPTCHA_SITE_KEY';
  * console on first load and must be allow-listed in the console.
  * Debug tokens are accepted for hackathon submissions.
  */
-export const appCheckDebugToken: string = '';
+export const appCheckDebugToken: string = '01DAA3F9-0B10-4300-AB23-43F51CD92651';
 
 /** True when the config still contains placeholder values. */
 export function isFirebaseConfigured(): boolean {

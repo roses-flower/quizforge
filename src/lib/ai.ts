@@ -187,6 +187,46 @@ function friendlyError(err: unknown): Error {
   return new Error(String(err));
 }
 
+/**
+ * Errors worth retrying: the cloud backend sheds load on the free tier
+ * ("high demand" 500s) and occasionally hangs until the SDK's own timeout.
+ * Parse errors and empty results are app-level failures — never retry those.
+ */
+const RETRYABLE = /500|429|503|overload|high demand|timeout|Timeout has expired|Failed to fetch/i;
+
+function isRetryable(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (/could not be parsed as JSON|returned no flashcards|returned no quiz|returned an empty explanation/i.test(msg)) {
+    return false;
+  }
+  return RETRYABLE.test(msg);
+}
+
+/** Call generateContent with up to 3 attempts and exponential backoff. */
+async function generateWithRetry(
+  model: GenerativeModel,
+  prompt: string,
+): Promise<{ text: string; inferenceSource: string | undefined }> {
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const result = await model.generateContent(prompt);
+      return {
+        text: result.response.text(),
+        inferenceSource: result.response.inferenceSource,
+      };
+    } catch (err) {
+      lastErr = err;
+      if (!isRetryable(err) || attempt === 3) throw friendlyError(err);
+      // Back off before retrying: the 500s are transient load shedding.
+      await new Promise((r) =>
+        setTimeout(r, attempt === 1 ? 5000 : 15000),
+      );
+    }
+  }
+  throw friendlyError(lastErr);
+}
+
 /* ------------------------------------------------------------------ */
 /* Flashcards                                                           */
 /* ------------------------------------------------------------------ */
@@ -214,14 +254,12 @@ Rules:
 
 Study notes:
 ${truncateNotes(notes)}`;
-    const result = await model.generateContent(prompt);
-    const parsed = parseJsonObject<{ flashcards: Flashcard[] }>(
-      result.response.text(),
-    );
+    const { text, inferenceSource } = await generateWithRetry(model, prompt);
+    const parsed = parseJsonObject<{ flashcards: Flashcard[] }>(text);
     if (!Array.isArray(parsed.flashcards) || parsed.flashcards.length === 0) {
       throw new Error('The model returned no flashcards. Please try again.');
     }
-    const source = mapSource(result.response.inferenceSource);
+    const source = mapSource(inferenceSource);
     return {
       data: parsed.flashcards,
       source,
@@ -263,12 +301,12 @@ Rules:
 
 Study notes:
 ${truncateNotes(notes)}`;
-    const result = await model.generateContent(prompt);
-    const parsed = parseJsonObject<GeneratedQuiz>(result.response.text());
+    const { text, inferenceSource } = await generateWithRetry(model, prompt);
+    const parsed = parseJsonObject<GeneratedQuiz>(text);
     if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) {
       throw new Error('The model returned no quiz questions. Please try again.');
     }
-    const source = mapSource(result.response.inferenceSource);
+    const source = mapSource(inferenceSource);
     return {
       data: parsed,
       source,
@@ -305,12 +343,15 @@ Rules:
 
 Study notes:
 ${truncateNotes(notes)}`;
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().trim();
+    const { text: rawText, inferenceSource } = await generateWithRetry(
+      model,
+      prompt,
+    );
+    const text = rawText.trim();
     if (!text) {
       throw new Error('The model returned an empty explanation. Please try again.');
     }
-    const source = mapSource(result.response.inferenceSource);
+    const source = mapSource(inferenceSource);
     return {
       data: text,
       source,

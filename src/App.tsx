@@ -265,7 +265,7 @@ export default function App() {
     useState<DeviceAvailability>('checking');
   const [mode, setMode] = useState<InferenceModeKey>('PREFER_ON_DEVICE');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
-  const [cloudModelId, setCloudModelId] = useState('gemini-2.5-flash');
+  const [cloudModelId, setCloudModelId] = useState('gemini-3.8-flash');
   const [remoteConfigLoaded, setRemoteConfigLoaded] = useState(false);
 
   const [notes, setNotes] = useState('');

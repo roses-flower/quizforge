@@ -49,7 +49,7 @@ const source = result.response.inferenceSource; // "on_device" | "in_cloud"
   API when available. The status panel shows live availability from
   `LanguageModel.availability()`.
 - **Cloud**: Gemini (model id from Remote Config, default
-  `gemini-2.5-flash`) when on-device is unavailable or the user prefers it.
+  `gemini-3.8-flash`) when on-device is unavailable or the user prefers it.
 - **Mode control**: the user picks Prefer on-device / Only on-device /
   Prefer in cloud / Only in cloud. Flashcards and quiz use the selected mode;
   explanations always prefer the cloud for depth.
