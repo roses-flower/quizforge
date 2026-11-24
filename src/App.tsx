@@ -72,9 +72,11 @@ function CloudIcon() {
 function SourceBadge({
   source,
   sample = false,
+  label,
 }: {
   source: InferenceSourceLabel;
   sample?: boolean;
+  label?: string;
 }) {
   if (sample) {
     return (
@@ -97,7 +99,9 @@ function SourceBadge({
       </span>
     );
   }
-  return <span className="badge badge-unknown">Source unknown</span>;
+  // Loaded decks carry a sourceLabel ('Saved deck'); a genuinely unknown AI
+  // result carries 'Source unknown' via the same field, so this stays honest.
+  return <span className="badge badge-unknown">{label ?? 'Source unknown'}</span>;
 }
 
 function FlashcardViewer({ cards }: { cards: Flashcard[] }) {
@@ -753,7 +757,7 @@ export default function App() {
               {flashcards ? (
                 <>
                   <div className="result-head">
-                    <SourceBadge source={flashcards.source} sample={isSample} />
+                    <SourceBadge source={flashcards.source} sample={isSample} label={flashcards.sourceLabel} />
                     <span className="result-meta">
                       {flashcards.modelHint} ·{' '}
                       {flashcards.generatedAt.toLocaleTimeString()}
@@ -778,7 +782,7 @@ export default function App() {
               {quiz ? (
                 <>
                   <div className="result-head">
-                    <SourceBadge source={quiz.source} sample={isSample} />
+                    <SourceBadge source={quiz.source} sample={isSample} label={quiz.sourceLabel} />
                     <span className="result-meta">
                       {quiz.modelHint} · {quiz.generatedAt.toLocaleTimeString()}
                     </span>
